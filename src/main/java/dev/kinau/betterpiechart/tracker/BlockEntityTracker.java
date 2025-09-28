@@ -1,4 +1,4 @@
-package dev.kinau.betterpiechart.utils;
+package dev.kinau.betterpiechart.tracker;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
@@ -6,13 +6,21 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
 
-public class BlockEntityUtils {
+public class BlockEntityTracker extends Tracker<BlockEntity> {
 
-    public static String getName(BlockEntity blockEntity) {
+    private static final BlockEntityTracker INSTANCE = new BlockEntityTracker();
+
+    public static BlockEntityTracker getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public String getName(BlockEntity blockEntity) {
         return BuiltInRegistries.BLOCK.getKey(blockEntity.getBlockState().getBlock()).getPath();
     }
 
-    public static Optional<String> getTag(BlockEntity blockEntity) {
+    @Override
+    public Optional<String> getTag(BlockEntity blockEntity) {
         if (blockEntity.getBlockState().is(BlockTags.ALL_SIGNS))
             return Optional.of(BlockTags.ALL_SIGNS.location().getPath());
         if (blockEntity.getBlockState().is(BlockTags.BANNERS))

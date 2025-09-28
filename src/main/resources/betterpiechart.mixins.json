@@ -6,7 +6,8 @@
   ],
   "client": [
     "BlockEntityRenderDispatcherMixin",
-    "LevelRendererMixin",
+    "EntityRenderDispatcherMixin",
+    "FeatureRenderDispatcherMixin",
     "ProfilerPieChartMixin"
   ],
   "injectors": {

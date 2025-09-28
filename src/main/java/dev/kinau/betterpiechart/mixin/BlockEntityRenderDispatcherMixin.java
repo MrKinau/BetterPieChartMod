@@ -1,33 +1,33 @@
 package dev.kinau.betterpiechart.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import dev.kinau.betterpiechart.blockEntity.BlockEntityTracker;
-import dev.kinau.betterpiechart.utils.BlockEntityUtils;
-import net.minecraft.client.renderer.MultiBufferSource;
+import dev.kinau.betterpiechart.tracker.BlockEntityTracker;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BlockEntityRenderDispatcher.class)
 public abstract class BlockEntityRenderDispatcherMixin {
 
-    @Inject(method = "render", at = @At("HEAD"))
-    public <E extends BlockEntity> void renderBlockEntityStart(E blockEntity, float f, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo ci) {
-        BlockEntityTracker.getInstance().add(blockEntity);
+    @Inject(method = "tryExtractRenderState", at = @At("HEAD"))
+    public <E extends BlockEntity> void tryExtractRenderStateStart(E blockEntity, float f, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, CallbackInfoReturnable<?> cir) {
+        BlockEntityTracker tracker = BlockEntityTracker.getInstance();
+        tracker.add(blockEntity);
         ProfilerFiller profiler = Profiler.get();
-        BlockEntityUtils.getTag(blockEntity).ifPresent(profiler::push);
-        profiler.push(BlockEntityUtils.getName(blockEntity));
+        tracker.getTag(blockEntity).ifPresent(profiler::push);
+        profiler.push(tracker.getName(blockEntity));
     }
 
-    @Inject(method = "render", at = @At(value = "RETURN"))
-    private <E extends BlockEntity> void renderBlockEntityEnd(E blockEntity, float f, PoseStack poseStack, MultiBufferSource multiBufferSource, CallbackInfo info) {
+    @Inject(method = "tryExtractRenderState", at = @At(value = "RETURN"))
+    private <E extends BlockEntity> void tryExtractRenderStateEnd(E blockEntity, float f, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, CallbackInfoReturnable<?> cir) {
+        BlockEntityTracker tracker = BlockEntityTracker.getInstance();
         ProfilerFiller profiler = Profiler.get();
-        BlockEntityUtils.getTag(blockEntity).ifPresent(s -> profiler.pop());
+        tracker.getTag(blockEntity).ifPresent(s -> profiler.pop());
         profiler.pop();
     }
 }
